@@ -1,2 +1,0 @@
-"Pos" "Ech" "Form" "Seuil" "NbAn"
-5430.34 1470.94 0.057098 NA NA

@@ -1,6 +1,6 @@
 require(lubridate);require(ggplot2);require(trend);require(ggpubr); require(forcats)
 require(cowplot);require(RSTooDs);require(evd);require(reshape);require(ggridges);
-require(RColorBrewer)
+require(RColorBrewer);require(beepr)
 
 dir.all = "C://Users/mathieu.lucas/Desktop/GitMat/CruesHisto/"
 dir.data = paste0(dir.all,"Data/") 
@@ -8,12 +8,7 @@ dir.codes = paste0(dir.all,"Codes/")
 dir.plots = paste0(dir.all,"Plots/") 
 dir.res = paste0(dir.all,"Results/")
 
-#### PARAMS SIMULATION
-Andeb = 1500
-Anfin = 2000
-Nsim = 5000
-Nspag = 500
-prob = seq(0.01,0.999,0.001) ; Pr = 1/(1-prob)
+
 
 #### fonction test poisson michel
 

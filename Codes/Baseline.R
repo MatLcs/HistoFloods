@@ -3,22 +3,22 @@
 
 #### 1816-2020
 case = "Baseline"
-dir.case = paste0(dir.res,case,"_case/"); dir.create(dir.case, showWarnings = F)
+dir.case = paste0(dir.res.ts,case,"_case/"); dir.create(dir.case, showWarnings = F)
 
 # Nspag = 50
 # Nsim = 500
 
 #### Data loading
-Spags = read.table(paste0(dir.data,"Spags_uTot_Amax.txt"))
-Q = read.table("C://Users/mathieu.lucas/Desktop/GitMat/PropagMaxAn/Results/Quantiles_Amax.txt",
-               header = T)[,c(1,2,7,8)]
+# Spags = read.table(paste0(dir.data,"Spags_uTot_Amax.txt"))
+# Q = read.table("C://Users/mathieu.lucas/Desktop/GitMat/PropagMaxAn/Results/Quantiles_Amax.txt",
+#                header = T)[,c(1,2,7,8)]
 #### SToods parameters, common GEV priors to all cases
-Pos = parameter(name='Pos',init = 6000) 
-Ech =  parameter(name='Ech',init = 1000) 
-Form = parameter(name='Form',init = 0.01,priorDist='Gaussian',priorPar=c(0,0.2))
+# Pos = parameter(name='Pos',init = 6000) 
+# Ech =  parameter(name='Ech',init = 1000) 
+# Form = parameter(name='Form',init = 0.01,priorDist='Gaussian',priorPar=c(0,0.3))
 
 #### Quantiles extracted up to Q1000 & return period associated
-prob = seq(0.01,0.999,0.001) ; Pr = 1/(1-prob)
+# prob = seq(0.01,0.999,0.001) ; Pr = 1/(1-prob)
 
 #### Initializing DF for MCMC results
 MegaSpag = data.frame()
@@ -26,7 +26,8 @@ MegaSpag = data.frame()
 for(spag in 1:Nspag){
   # spag = 1
   print(paste0("Spag = ",spag))
-  dat <- dataset(Y = data.frame(Spags[,spag]))
+  #draw a random spag within the 500 Q AMAX spags
+  dat <- dataset(Y = data.frame(Spags[,spag]))#[,sample(1:500,1)]))
   mod <- model(dataset=dat, parentDist ='GEV', par=list(Pos,Ech,Form))
   #### Create spag subfolder 
   dir.spag = file.path(dir.case,"Spag"); dir.create(dir.spag,showWarnings = F)
@@ -83,12 +84,13 @@ Quant = ggplot()+
                     values = c("#67a9cf"))+
   scale_color_manual(values = c("yellow"))+ 
   theme_bw(base_size=15)+
-  coord_cartesian(xlim=c(1,1000))+
+  coord_cartesian(xlim=c(1,max(Pr)))+
   theme(legend.title=element_blank(),
         plot.title = element_text(hjust = 0.01, vjust = -7),
         legend.position = c(0.8,0.2))  
 
 ggsave(Quant, path = dir.case, filename = paste0("Quantiles_",case,".pdf"),width = 10, height = 7)
 
+beep(t)
 
 
