@@ -11,7 +11,7 @@ sd.Ts = 1000
 #nban
 sd.NbAn = 50
 #### PARAMS SIMULATION
-Ychange = 1970 ; Nsim = 4000 ; Nspag = 500 ; Andeb = 1816 ; Anfin = 1970
+Ychange = 1970 ; Nsim = 6000 ; Nspag = 500 ; Andeb = 1816 ; Anfin = 1970
 # RP up top 10 000 years
 prob = c(seq(0.01,0.999,0.001),seq(0.9991,0.9999,0.0001)) ; Pr = 1/(1-prob)
 #### 5 cases

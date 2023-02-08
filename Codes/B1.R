@@ -90,11 +90,6 @@ Mp.GeV = MCMCres[which.max(MCMCres$post),(1:5)]
 Mp.Quant = qgev(p = prob,loc = Mp.GeV$Pos, scale = Mp.GeV$Ech,shape = -1*Mp.GeV$Form)
 
 quant = apply(MegaGev,MARGIN = 2,FUN = quantile, probs = c(0.025,0.975))
-## floods PR
-Freq = Q[order(Q$mp),]
-Freq$Fr = (seq(1:length(Q$an))-0.5)/length(Q$an)
-Freq$Pr = 1/(1-Freq$Fr)
-
 Quants = data.frame(Pr=Pr, Mp=Mp.Quant, Q_2=quant[1,] ,Q_9=quant[2,])
 
 write.table(round(Quants,3), paste0(dir.case,case,"_Quants.txt"), row.names = F)
@@ -102,18 +97,57 @@ write.table(round(data.frame(Shape = PostForm, Thres = PostThres, Nban = PostNba
             paste0(dir.case,case,"_Params.txt"), row.names = F)
 write.table(Mp.GeV,  paste0(dir.case,case,"_Maxpost_Par.txt"), row.names = F)
 
-# hist(PostForm); abline(v = Mp.GeV$Form,col="red",lwd=2)
-# hist(rnorm(length(PostThres),Ts,sd.Ts),breaks = seq(3000,10000,20), col="blue")
-# hist(PostThres,add=T); abline(v = Mp.GeV$Seuil,col="red",lwd=2)
-# hist(PostNban,breaks = seq(300,600,10)); abline(v = Mp.GeV$NbAn,col="red",lwd=2)
+#### plot positions histo
+NC = length(Q$an)
+NH = Anfin-Andeb
+#Nombre de crues histo sup. au seuil
+NS_H = length(CX$An)
+#Nombre de crues de la période continue sup. au seuil
+NS_C = length(which(Q$mp>Ts))
+#Nombre tot. de crues sup. au seuil 
+NS = NS_H + NS_C
+#Nombre de crues inf. au seuil
+Ninf = length(which(Q$mp <= Ts))
+#Nombre d'années total
+NAn = NC + NH
+#proba crue continue
+PC = NS_C/NS
+#proba crue histo
+PH = NS_H/NS
+#data frame crues supseuil
+SupSeuil = data.frame(rang=1:NS)
+SupSeuil$flag = "Hist"
+SupSeuil$flag[sample(1:NS,NS_C,replace = F)]="Cont"
+SupSeuil$mp = NA
+SupSeuil$tot2.5 = NA
+SupSeuil$tot97.5 = NA
+SupSeuil$mp[which(SupSeuil$flag == "Cont")] = Q$mp[order(Q$mp,decreasing = T)]
+SupSeuil$tot2.5[which(SupSeuil$flag == "Cont")] = Q$tot2.5[order(Q$mp,decreasing = T)]
+SupSeuil$tot97.5[which(SupSeuil$flag == "Cont")] = Q$tot97.5[order(Q$mp,decreasing = T)]
+SousSeuil = Q[which(Q$mp<Ts),(2:4)]
+SousSeuil = SousSeuil[order(SousSeuil$mp, decreasing = T),]
+SousSeuil$rang = (NS+1):(NS_H+NC)
+SousSeuil$flag = "Cont"
+Freq = merge.data.frame(SupSeuil,SousSeuil, all = T)
+Freq$tot2.5[which(Freq$flag == "Hist")] = Ts
+Freq$tot97.5[which(Freq$flag == "Hist")] = 50000
+Freq$Fr = (Freq$rang-0.5)/(NS+Ninf)
+Freq$Pr = 1/Freq$Fr
 
 
+### PLOT QUANTS
 Quant = ggplot()+
   geom_ribbon(data=Quants,aes(x=Pr, ymin = Q_2, ymax=Q_9,
                               fill="95% uncertainty interval"),alpha=0.8)+
   geom_line(data=Quants,aes(x=Pr,y=Mp,col="Maxpost"),lwd=1)+
-  geom_point(data = Freq, aes(x=Pr, y = mp))+
-  geom_errorbar(data=Freq, aes(x=Pr,ymin = tot2.5, ymax = tot97.5))+
+  geom_errorbar(data=Freq[which(Freq$flag=="Cont"),],
+                aes(x=Pr,ymin = tot2.5, ymax = tot97.5))+
+  geom_point(data = Freq[which(Freq$flag=="Cont"),],
+             aes(x=Pr, y = mp))+
+  geom_errorbar(data=Freq[which(Freq$flag=="Hist"),],
+                aes(x=Pr,ymin = tot2.5, ymax = tot97.5),lty=2)+
+  geom_point(data = Freq[which(Freq$flag=="Hist"),], aes(x=Pr,y=tot2.5),shape = 17)+
+  
   scale_x_continuous(trans="log10")+
   xlab("Return period [years]")+
   ylab("Discharge [m3/s]")+
@@ -122,13 +156,35 @@ Quant = ggplot()+
   scale_color_manual(values = c("yellow"))+ #"royalblue")+
   theme_bw(base_size=15)+
   # labs(title = paste0(head(Q$an,1)," - ",tail(Q.case$an,1)))+
-  coord_cartesian(xlim=c(1,max(Pr)))+
+  coord_cartesian(xlim=c(1,max(Pr)),ylim = c(min(Quants$Q_2),20000))+
   theme(legend.title=element_blank(),
         plot.title = element_text(hjust = 0.01, vjust = -7),
-        legend.position = c(0.8,0.2))  
+        legend.position = c(0.8,0.2))
 
-ggsave(Quant, path = dir.case, filename = paste0("Quantiles_",case,caseTs,".pdf"),width = 10, height = 7)
+ggsave(Quant, path = dir.case, filename = paste0("Quantiles_",case,caseTs,".pdf"),
+       width = 10, height = 7)
 
+# Quant = ggplot()+
+#   geom_ribbon(data=Quants,aes(x=Pr, ymin = Q_2, ymax=Q_9,
+#                               fill="95% uncertainty interval"),alpha=0.8)+
+#   geom_line(data=Quants,aes(x=Pr,y=Mp,col="Maxpost"),lwd=1)+
+#   geom_point(data = Freq, aes(x=Pr, y = mp))+
+#   geom_errorbar(data=Freq, aes(x=Pr,ymin = tot2.5, ymax = tot97.5))+
+#   scale_x_continuous(trans="log10")+
+#   xlab("Return period [years]")+
+#   ylab("Discharge [m3/s]")+
+#   scale_fill_manual(name = element_blank(),
+#                     values = c("#67a9cf"))+
+#   scale_color_manual(values = c("yellow"))+ #"royalblue")+
+#   theme_bw(base_size=15)+
+#   # labs(title = paste0(head(Q$an,1)," - ",tail(Q.case$an,1)))+
+#   coord_cartesian(xlim=c(1,max(Pr)))+
+#   theme(legend.title=element_blank(),
+#         plot.title = element_text(hjust = 0.01, vjust = -7),
+#         legend.position = c(0.8,0.2))  
+# 
+# ggsave(Quant, path = dir.case, filename = paste0("Quantiles_",case,caseTs,".pdf"),width = 10, height = 7)
+# 
 
 
 

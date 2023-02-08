@@ -2,8 +2,8 @@
 
 #### Data loading
 CXall = read.csv2(paste0(dir.data,"CX_All.csv"))
-# Q = read.table("C://Users/mathieu.lucas/Desktop/GitMat/PropagMaxAn/Results/Quantiles_Amax.txt",
-#   header = T)[,c(1,2,7,8)]
+Q = read.table("C://Users/mathieu.lucas/Desktop/GitMat/PropagMaxAn/Results/Quantiles_Amax.txt",
+  header = T)[,c(1,2,7,8)]
 #### Homogeneity of systematic records
 # plot(x=Q$an, y = Q$mp,type="l", ylab = "Discharge",xlab="Date")
 # mktrend = mk.test(Q$mp)
@@ -11,8 +11,8 @@ CXall = read.csv2(paste0(dir.data,"CX_All.csv"))
 # mktrend$p.value<0.05
 # ptdate$p.value<0.05
 # #### Homogeneity of flood occurences
-# Andeb = 1500
-# Anfin = 1816
+Andeb = 1500
+Anfin = 1816
 
 CX = CXall[which(CXall$An > Andeb & CXall$An < Anfin),]
 #### CALCULATION OF START DATE FROM ILARIA PRODOSCIMI
@@ -23,36 +23,77 @@ tk = Anfin - CX$An[which(CX$An > Andeb)][1]
 NbAnIlaria = tk + tk/k - 1
 
 ###Poisson process
-# PCX=PoissoN(CX$An[which(CX$An>Andeb)],Andeb=Andeb,Anfin = Anfin, alpha = 0.025)
+PCX=PoissoN(CX$An[which(CX$An>Andeb)],Andeb=Andeb,Anfin = Anfin)
 # PC3=PoissoN(CX$An[which(CX$An>Andeb & CX$Cat=="C4")],Andeb=Andeb,Anfin = Anfin)
-# PC4=PoissoN(CX$An[which(CX$An>Andeb & CX$Cat=="C3")],Andeb=Andeb,Anfin = Anfin)
-# pdf(file = paste0(dir.plots,"Poisson_C3-C4.pdf"), width = 12, height = 7)
-# plot(x = PCX$AnneeCrue, y = PCX$FloodNumber, type='b', pch = 19, col ="purple",
-#      ylab = "Cumulated flood number", xlab = "Years")
-# #C3 only
+PC4=PoissoN(CX$An[which(CX$An>Andeb & CX$Cat=="C3")],Andeb=Andeb,Anfin = Anfin)
+# # PoissoN(CXall$An[which(CXall$An > Andeb)],Andeb=Andeb,Anfin = 2000,Anrupt = list(Anfin))
+# pdf(file = paste0(dir.plots,"Poisson_C3-C4_FR.pdf"), width = 12, height = 7)
+plot(x = PCX$AnneeCrue, y = PCX$FloodNumber, type='b', pch = 19, col ="blue",
+     ylab = "Cumulated flood number", xlab = "Years")
+#C3 only
 # points(x = PC3$AnneeCrue, y = PC3$FloodNumber, type = 'b', pch = 19, col = "blue")
-# #C4 only
-# points(x = PC4$AnneeCrue, y = PC4$FloodNumber, type = 'b', pch = 19, col = "red")
-# #confidence intervals
-# lines(x = PCX$AnExp, y =  PCX$EllipInf, lty = 2,col = "purple")
-# lines(x = PCX$AnExp, y =  PCX$EllipSup, lty = 2,col="purple")
+#C4 only
+points(x = PC4$AnneeCrue, y = PC4$FloodNumber, type = 'b', pch = 19, col = "red")
+#confidence intervals
+lines(x = PCX$AnExp, y =  PCX$EllipInf, lty = 2,col = "blue")
+lines(x = PCX$AnExp, y =  PCX$EllipSup, lty = 2,col="blue")
 # lines(x = PC3$AnExp, y =  PC3$EllipInf, lty = 2,col = "blue")
 # lines(x = PC3$AnExp, y =  PC3$EllipSup, lty = 2,col="blue")
-# lines(x = PC4$AnExp, y =  PC4$EllipInf, lty = 2,col = "red")
-# lines(x = PC4$AnExp, y =  PC4$EllipSup, lty = 2,col="red")
-# #starting points
-# points(x = PCX$AnneeCrue[1], y = PCX$FloodNumber[1], pch = 19,col = "indianred", cex = 1.5)
-# points(x = tail(PCX$AnneeCrue,1),y = tail(PCX$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
+lines(x = PC4$AnExp, y =  PC4$EllipInf, lty = 2,col = "red")
+lines(x = PC4$AnExp, y =  PC4$EllipSup, lty = 2,col="red")
+#starting points
+points(x = PCX$AnneeCrue[1], y = PCX$FloodNumber[1], pch = 19,col = "indianred", cex = 1.5)
+points(x = tail(PCX$AnneeCrue,1),y = tail(PCX$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
 # points(x = tail(PC3$AnneeCrue,1),y = tail(PC3$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
-# points(x = tail(PC4$AnneeCrue,1),y = tail(PC4$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
-# #legend
+points(x = tail(PC4$AnneeCrue,1),y = tail(PC4$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
+#legend EN
 # legend(x = "topleft",legend = c("C3 & C4 floods",
-#                                 "C3 floods",
+#                                 # "C3 floods",
 #                                 "C4 floods",
 #                                 "Start/End ",
 #                                 "95% confidence intervals"),
-#        col = c("purple","blue","red","indianred","black"),lty = c(1,1,1,0,2),
-#        pch = c(20,20,20,20,NA),   pt.cex = c(1,1,1,2,1), cex = 1.2)
+# 
+#        col = c(
+#          # "purple",
+#                  "blue","red","indianred","black"),lty = c(1,#1,
+#                        1,0,2),
+#        pch = c(20,#20,
+#                20,20,NA),   pt.cex = c(1,#1,
+#                                        1,2,1), cex = 1.2)
+#Legend FR
+legend(x = "topleft",legend = c("Catég. C3&C4",
+                                "Catég. C4",
+                                "Début/Fin",
+                                "Intervalle de conf. 95%"),
+
+       col = c( "blue","red","indianred","black"),lty = c(1,1,0,2),
+       pch = c(20, 20,20,NA),   pt.cex = c(1,1,2,1), cex = 1.2)
+# dev.off()
+
+
+P7 = PoissoN(Q$an[which(Q$mp>7000)],Andeb=1816,Anfin = 2020)
+P9 = PoissoN(Q$an[which(Q$mp>9000)],Andeb=1816,Anfin = 2020)
+
+# pdf(file = paste0(dir.plots,"Poisson_Qrecent_FR.pdf"), width = 12, height = 7)
+  plot(x = P7$AnneeCrue, y = P7$FloodNumber, type='b', pch = 19, col ="blue",
+       ylab = "Nombre cumulé de crues", xlab = "Années")
+  points(x = P9$AnneeCrue, y = P9$FloodNumber, type = 'b', pch = 19, col = "red")
+  #confidence intervals
+  lines(x = P7$AnExp, y =  P7$EllipInf, lty = 2,col = "blue")
+  lines(x = P7$AnExp, y =  P7$EllipSup, lty = 2,col="blue")
+  lines(x = P9$AnExp, y =  P9$EllipInf, lty = 2,col = "red")
+  lines(x = P9$AnExp, y =  P9$EllipSup, lty = 2,col="red")
+  #starting/end points
+  points(x = P7$AnneeCrue[1], y = P7$FloodNumber[1], pch = 19,col = "indianred", cex = 1.5)
+  points(x = tail(P7$AnneeCrue,1),y = tail(P7$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
+  points(x = tail(P9$AnneeCrue,1),y = tail(P9$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
+  #legend expression(paste("Discharge [",m^3,".",s^-1,"]",sep=""))
+  legend(x = "topleft",legend = c(expression(paste("Seuil de perc. 7000 ",m^3,"/",s,sep = "")),
+                                  expression(paste("Seuil de perc. 9000 ",m^3,"/",s,sep = "")),
+                                  "Début/Fin",
+                                  "Intervalle de conf. 95%"),
+         col = c("blue","red","indianred","black"),lty = c(1,1,0,2),pch = c(20,20,20,NA),
+                 pt.cex = c(1,1,2,1), cex = 1.2)
 # dev.off()
 
 #### Perception threshold determination
@@ -65,8 +106,8 @@ for(y in 1:length(CXall$An)) { Q$type[which(Q$an == CXall$An[y])] = CXall$Cat[y]
 TsC3 = Q[which(Q$type != "none")[(which.min(Q$mp[which(Q$type != "none")]))],]
 TsC4 =  Q[which(Q$type == "C4")[(which.min(Q$mp[which(Q$type == "C4")]))],]
 
-write.table(TsC3, paste0(dir.data,"ThresholdC3.txt"),row.names = F)
-write.table(TsC4,  paste0(dir.data,"ThresholdC4.txt"),row.names = F)
+# write.table(TsC3, paste0(dir.data,"ThresholdC3.txt"),row.names = F)
+# write.table(TsC4,  paste0(dir.data,"ThresholdC4.txt"),row.names = F)
 
 # Categ = 
 ggplot(data=Q)+
@@ -83,7 +124,7 @@ ggplot(data=Q)+
   labs(x="Years",y="Discharge [m3/s]")+
   coord_cartesian(xlim = c(1817,1998))
 
-ggsave(path = dir.plots, filename = "C3-C4_SystematicPeriod.pdf", width = 12, height = 8)
+# ggsave(path = dir.plots, filename = "C3-C4_SystematicPeriod.pdf", width = 12, height = 8)
 
 # ### Pettit and MK tests
 # Pett = rep(NA,Nspag); Mkt = Pett
