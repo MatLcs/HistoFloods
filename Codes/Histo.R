@@ -2,7 +2,7 @@ rm(list=ls())
 source("C://Users/mathieu.lucas/Desktop/GitMat/CruesHisto/Codes/Dirs&Funs.R")
 
 ###### RUN PARAMS
-Nsim = 10000; Nspag = 500 ; textsize = 15
+Nsim = 8000; Nspag = 500 ; textsize = 15
 prob = c(seq(0.01,0.999,0.001),seq(0.9991,0.9999,0.0001)) ; Pr = 1/(1-prob)
 starthist = 1500
 endhist = 1815
@@ -37,9 +37,15 @@ Nhists = list(endhist-starthist,endhist-starthist,
 #### Threshold priors
 Thres = c(7000,9000,7000,9000)
 sdThres = 2000
-#### Nban priors
-NbanS = c(1816-1511,1816-1529,1970-1816,1970-1816)
-MaxUnif_Nban = 1000
+#### Nban priors (when Nban is draw in Unif dist.) : end of histo. period - date of first OT flood 
+NbanS = c(endhist-Call$An[which(Call$An > 1500)][1],
+          endhist-Call$An[which(Call$An > 1500 & Call$Cat == "C4")][1],
+          endhistartif-Q$an[which(Q$mp > 7000)][1],
+          endhistartif-Q$an[which(Q$mp > 9000)][1])
+
+StartH = c(starthist,starthist,starthistartif,starthistartif)
+
+MaxUnif_Nban = 500
 #### 4 models
 models =  c("A","B","C","D")
 distsTs = c("FIX","Gaussian","FIX","Gaussian")
@@ -78,13 +84,15 @@ if(RUN == T){
   #### Run GEV_Binoms
   for(s in 1:length(samples)){
     for(m in 1:length(models)){
-
       dir.case = paste0(dir.res,samples[s],"/model_",models[m])
+      #true number of years for FIX distribution vs first flood number for Unif
+      if(distsNb[m] == "FIX"){ aNb = Nhists[[s]] } else { aNb = NbanS[s] }
+      # Fun run
       GEV_Binom(Qcont = Qconts[[s]],
                 SpagCont = Spagsss[[s]],
                 Occ = data.frame(an=Occs[[s]]),
                 Ts = list(distsTs[m],c(Thres[s],sdThres),Thres[s]),#dist,prior,init
-                Nban = list(distsNb[m],c(NbanS[s],MaxUnif_Nban),NbanS[s]),
+                Nban = list(distsNb[m],c(aNb,MaxUnif_Nban),aNb),#dist,prior,init
                 prob = prob,
                 Nsim = Nsim,
                 Nhist = Nhists[[s]],
@@ -93,8 +101,8 @@ if(RUN == T){
   }
 ### RUN Baselines
   for(b in 1:length(Baselines)){
-
     dir.case = paste0(dir.res,"/Baseline_",Baselines[b])
+    # Fun run
     GEV_Spag(Q = Qbaselines[[b]],
              Spags = SpagsBaseline[[b]],
              prob = prob,Nsim = Nsim,dir.res = dir.case)
@@ -167,18 +175,22 @@ for(s in 1:length(samples)){
     geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
     geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
     scale_fill_manual(values = c(palbase[1:(length(Quants100$model)-4)],palmod))+
-    ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+    # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+    ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
     theme_light(base_size = textsize)+
-    ggtitle(paste0("Q100 - sample ", samples[s]))+
+    ggtitle(paste0("Q100 - Echantillon n°", s))+
     scale_x_discrete(labels=c(rep("GEV",length(Quants100$model)-4),models))
+    # scale_x_discrete(labels=c(rep("GEV",length(Quants100$model)-4),c("u0","uS","uN","uSN")))
   
   BarQ1000 = ggplot(data=Quants1000, aes(x = model, y = Mp, ymin = Q_2, ymax = Q_9, fill = model))+
     geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
     geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
     scale_fill_manual(values = c(palbase[1:(length(Quants100$model)-4)],palmod))+
-    ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+    # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+    ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
     theme_light(base_size = textsize)+
-    ggtitle(paste0("Q1000 - sample ", samples[s]) )+
+    # ggtitle(paste0("Q1000 - sample ", s) )+
+    ggtitle(paste0("Q1000 - Echantillon n°", s) )+
     scale_x_discrete(labels=c(rep("GEV",length(Quants100$model)-4),models))
     
   ggarrange(BarQ100+coord_cartesian(ylim = c(5000,max(Quants1000$Q_9)) )+
@@ -208,9 +220,13 @@ for(s in 1:length(samples)){
     scale_color_manual(values = c(palmod,palbase[1:(length(Quants100$model)-4)]) )+
     xlab("[-]")+
     theme(axis.title.y = element_blank(),legend.title = element_blank())+
-    ggtitle("GEV Shape parameter")+
+    # ggtitle("GEV Shape parameter")+
+    ggtitle("Paramètre de forme")+
     coord_cartesian(xlim=c(0-3*sd(Params$value[which(Params$variable=="Shape")]),
                            0+4*sd(Params$value[which(Params$variable=="Shape")])))
+  
+  ggsave(path = paste0(dir.plots,samples[s]), filename = paste0("Shape_",samples[s],".pdf"),
+         width = 10,height = 8)
   
   #### Threshold
   priorthres = Params[which(Params$variable=="Thres" & Params$model==models[1] 
@@ -230,9 +246,12 @@ for(s in 1:length(samples)){
         Params$sample==samples[s] & Params$model=="B")])$y)),
         xlim=c(Thres[s]-1.5*sdThres, Thres[s]+1.5*sdThres))+
     theme_light(base_size = textsize)+
-    xlab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-    ylab("Density")+
-    ggtitle("Perception threshold")+
+    # xlab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+    # ylab("Density")+
+    # ggtitle("Perception threshold")+
+    xlab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+    ylab("Densité")+
+    ggtitle("Seuil de perception")+
     theme(legend.title = element_blank())
 
   # #### NB AN
@@ -243,29 +262,36 @@ for(s in 1:length(samples)){
   for(i in 1:length(models[which(distsNb == "FIX")])){Params$value[which(Params$variable=="Nban" &
                     Params$model==models[which(distsNb == "FIX")][i])] = 0}
   endPhist = Qconts[[s]]$an[1]
+  
   GGNban = ggplot(rbind(priornban,Params[which(Params$variable == "Nban"),]), 
                 aes(x = endPhist-value, fill = model)) +
     geom_histogram(aes(y=..density..),position = "identity", bins = 600, alpha = 0.7,color = NA)+
-    geom_vline(data = ParamsMp[which(ParamsMp$variable == "NBan"),],
-               aes( xintercept = endPhist-value, color = model), lwd = 1, alpha = 1,show.legend = F)+
+    # geom_vline(data = ParamsMp[which(ParamsMp$variable == "NBan"),],
+    #            aes( xintercept = endPhist-value, color = model), lwd = 1, alpha = 1,show.legend = F)+
+    geom_vline(aes(xintercept = StartH[s]), lwd=1)+
     scale_fill_manual(values = c(colprior, palmod) )+
-    scale_color_manual(values = palmod)+
-    coord_cartesian(ylim = c(0, 1.5*max(density(Params$value[which(Params$variable=="Nban" &
+    # scale_color_manual(values = palmod)+
+    coord_cartesian(ylim = c(0, 1.1*max(density(Params$value[which(Params$variable=="Nban" &
                                          Params$sample==samples[s] & Params$model=="C")])$y)),
-                    xlim = c( endPhist-max(ParamsMp$value[which(ParamsMp$variable=="NBan")])-30,
-                              endPhist-NbanS[s]+2 ) )+
+                    # xlim = c( endPhist-max(ParamsMp$value[which(ParamsMp$variable=="NBan")])-30,
+                    #           endPhist-NbanS[s]+2 )  )+
+                    xlim = c( endPhist-max(priornban$value),
+                              endPhist-NbanS[s]+2 )  )+
     theme_light(base_size = textsize)+
-    xlab("Year")+
-    ylab("Density")+
-    ggtitle("Start date of historical period")+
+    # xlab("Year")+
+    # ylab("Density")+
+    # ggtitle("Start date of historical period")+
+    xlab("Année")+
+    ylab("Densité")+
+    ggtitle("Date de début de la période historique")+
     theme(legend.title = element_blank())
     
   ##### ARRANGE
-  ggarrange(GGShape,GGThres,GGNban, ncol = 3, common.legend = T, legend = "bottom", align = "h")
+  ggarrange(GGThres,GGNban+theme(axis.title.y = element_blank()),
+            ncol = 2, common.legend = T, legend = "bottom", align = "hv")
   ggsave(path = paste0(dir.plots,samples[s]), filename = paste0("Params_",samples[s],".pdf"),
          width = 15,height = 7)
-  
-  
+  ymax = max( max(QuantsAll[[2]]$Q_9), max(QuantsAll[[length(QuantsAll)]]$Q_9) )
   for(b in 1:(length(Quants1000$model)-4)){
     Freq = Qbaselines[[b]][order(Qbaselines[[b]]$mp),]
     Freq$Fr = (seq(1:length(Qbaselines[[b]]$an))-0.5)/length(Qbaselines[[b]]$an)
@@ -273,17 +299,20 @@ for(s in 1:length(samples)){
     
     GGQuants[[b]] = ggplot()+
       geom_ribbon(data=QuantsAll[[length(models)+b]],aes(x=Pr, ymin = Q_2, ymax=Q_9,
-                                             fill="95% uncertainty interval"),alpha=0.8)+
+                                             # fill="95% uncertainty interval"),alpha=0.8)+
+                                             fill="Intervalle de conf. 95%"),alpha=0.8)+
       geom_line(data=QuantsAll[[length(models)+b]],aes(x=Pr,y=Mp,col="Maxpost"),lwd=1)+
       geom_point(data = Freq, aes(x=Pr, y = mp))+
       geom_errorbar(data=Freq, aes(x=Pr,ymin = tot2.5, ymax = tot97.5))+
       scale_x_continuous(trans="log10")+
-      xlab("Return period [years]")+
-      ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+      # xlab("Return period [years]")+
+      # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+      xlab("Période de retour [années]")+
+      ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
       scale_fill_manual(name = element_blank(),values = c("#67a9cf"))+
       scale_color_manual(values = c("yellow"))+ 
       theme_bw(base_size=textsize)+
-      coord_cartesian(xlim=c(1,max(Pr)))+
+      coord_cartesian(xlim=c(1,max(Pr)),ylim=c(2000, ymax) )+
       theme(legend.title=element_blank(),
             plot.title = element_text(hjust = 0.01, vjust = -7),
             legend.position = c(0.8,0.2))+
@@ -295,9 +324,9 @@ for(s in 1:length(samples)){
 
     #### plot positions histo
     alpha = 0.5
-    # Dur�e periode continue
+    # Durée periode continue
     NC = length(Qconts[[s]]$an)
-    # Dur�e periode histo
+    # Durée periode histo
     NH = Nhists[[s]]
     #Nombre de crues histo sup. au seuil
     NS_H = length(Occs[[s]])
@@ -343,11 +372,12 @@ for(s in 1:length(samples)){
     for(i in 1:length(rhist)){
       while(rhist[i]-rcont[cptcont] > 0){cptcont=cptcont+1}
       Freq$tot2.5[rhist[i]] = Freq$mp[rcont[cptcont]] }
-    
+
     ### PLOT QUANTS
     GGQuants[[m+(length(Quants1000$model)-4)]] = ggplot()+
       geom_ribbon(data=QuantsAll[[m]],aes(x=Pr, ymin = Q_2, ymax=Q_9,
-                                             fill="95% uncertainty interval"),alpha=0.8)+
+                                             # fill="95% uncertainty interval"),alpha=0.8)+
+                                          fill="Intervalle de conf. 95%"),alpha=0.8)+
       geom_line(data=QuantsAll[[m]],aes(x=Pr,y=Mp,col="Maxpost"),lwd=1)+
       geom_errorbar(data=Freq[which(Freq$flag=="Cont"),],
                     aes(x=Pr,ymin = tot2.5, ymax = tot97.5))+
@@ -359,17 +389,20 @@ for(s in 1:length(samples)){
       geom_point(data = Freq[which(Freq$flag=="Hist"),], aes(x=Pr,y=tot2.5),shape = 17,
                  col="lightgrey")+
       scale_x_continuous(trans="log10")+
-      xlab("Return period [years]")+
-      ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+      # xlab("Return period [years]")+
+      # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+      xlab("Période de retour [années]")+
+      ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
       scale_fill_manual(name = element_blank(),
                         values = c("#67a9cf"))+
       scale_color_manual(values = c("yellow"))+
       theme_bw(base_size=textsize)+
-      coord_cartesian(xlim=c(1,max(Pr)),ylim = c(2000, max(QuantsAll[[2]]$Q_9) ))+
+      coord_cartesian(xlim=c(1,max(Pr)),ylim = c(2000, ymax ))+
       theme(legend.title=element_blank(),
             plot.title = element_text(hjust = 0.01, vjust = -7),
             legend.position = c(0.8,0.2))+
-      ggtitle(paste0("Model ",models[m]))
+      # ggtitle(paste0("Model ",models[m]))
+      ggtitle(paste0("Modèle ",models[m]))
     
   }
   
@@ -394,19 +427,23 @@ for(s in 1:length(samples)){
     
   }
   ggsave(path = paste0(dir.plots,samples[s],"/"), filename = paste0("Quantiles_",samples[s],".pdf"),
-         width = 20, height = 17)
+         width = 18, height = 14)
     
   
   ## SCATTERPLOTS
   npoints = length(ParamAll[[m]][,1])
-  ggarrange(ggscatmat(ParamAll[[1]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)]),
-            ggscatmat(ParamAll[[2]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)]),
-            ggscatmat(ParamAll[[3]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)]),
-            ggscatmat(ParamAll[[4]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)]),
-            ncol = 2, nrow = 2,align = "hv", 
-            labels = models)
-  ggsave(filename = paste0("Scatters_",samples[s],".pdf"),path = paste0(dir.plots,samples[s],"/"),
-         height = 10, width = 10)
+  # ggarrange(ggscatmat(ParamAll[[1]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)]),
+  #           ggscatmat(ParamAll[[2]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)]),
+  #           ggscatmat(ParamAll[[3]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)]),
+  #           ggscatmat(ParamAll[[4]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)]),
+  #           ncol = 2, nrow = 2,align = "hv", 
+  #           labels = models)
+  pdf(paste0(dir.plots,samples[s],"/","ScatterD_",samples[s],".pdf"), height = 6, width=6)
+    pairs.panels(ParamAll[[4]][ sample(x = 1:npoints, size = 10000, replace = F) , (1:3)],
+                 hist.col = palmod[4], density = T,lm = F,smooth = F)
+  dev.off()
+  # ggsave(filename = paste0("ScatterD_",samples[s],".pdf"),path = paste0(dir.plots,samples[s],"/"),
+  #        height = 10, width = 10)
   
   
 }
