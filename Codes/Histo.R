@@ -286,11 +286,13 @@ for(s in 1:length(samples)){
     ggtitle("Date de début de la période historique")+
     theme(legend.title = element_blank())
     
-  ##### ARRANGE
+  ## ARRANGE
   ggarrange(GGThres,GGNban+theme(axis.title.y = element_blank()),
             ncol = 2, common.legend = T, legend = "bottom", align = "hv")
   ggsave(path = paste0(dir.plots,samples[s]), filename = paste0("Params_",samples[s],".pdf"),
          width = 15,height = 7)
+  
+  ######## QUANTILES
   ymax = max( max(QuantsAll[[2]]$Q_9), max(QuantsAll[[length(QuantsAll)]]$Q_9) )
   for(b in 1:(length(Quants1000$model)-4)){
     Freq = Qbaselines[[b]][order(Qbaselines[[b]]$mp),]
@@ -316,8 +318,7 @@ for(s in 1:length(samples)){
       theme(legend.title=element_blank(),
             plot.title = element_text(hjust = 0.01, vjust = -7),
             legend.position = c(0.8,0.2))+
-      ggtitle(paste0("GEV",Baselines[b]))+
-      coord_cartesian(ylim = c(2000,20000))
+      ggtitle(paste0("GEV",Baselines[b]))
   }
   
   for(m in 1:length(models)){

@@ -263,7 +263,7 @@ GEV_Binom = function(Qcont,   #df with an, mp, tot2.5, tot97.5 of continuous per
   Nspag = ncol(SpagCont)
   for(spag in 1:Nspag){
     print(paste0("Spag = ",spag))
-    Y = data.frame(  c(SpagCont[,spag], length(Occ[,1])) )
+    Y = data.frame(  c(SpagCont[,spag], nrow(Occ)) )
     Var = data.frame(factor(c(rep('Q',length(Qcont[,1])),"Occ")))
     dat <- dataset(Y = Y, var = Var)
     mod <- model(dataset=dat, parentDist=c("GEV","Binomial"), varName = c("Q","Occ") ,
@@ -290,7 +290,7 @@ GEV_Binom = function(Qcont,   #df with an, mp, tot2.5, tot97.5 of continuous per
   PostThres = MegaSpag$Seuil
   PostNban = MegaSpag$NBan
   #### Compute the true maxpost quantiles : maxpost of hydro sample x maxpost of GeV estim
-  Y = data.frame(c(Qcont[,2], length(Occ[,1])) )
+  Y = data.frame(c(Qcont[,2], nrow(Occ)) )
   Var = data.frame(factor(c(rep('Q',length(Qcont[,2])),"Occ")))
   dat <- dataset(Y = Y, var = Var)
   #### Create MP sub-folder & run Stoods
