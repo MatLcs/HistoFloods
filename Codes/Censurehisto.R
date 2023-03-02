@@ -8,7 +8,7 @@ starthistartif = 1816
 endhistartif = 1970
 Thres = 9000
 Nbhists = endhistartif - starthistartif
-Run = T
+Run = F
 
 ###### DATA LOADING
 ###Histrhone data 
@@ -52,7 +52,7 @@ pal.Base = "#4dac26"
 A.dir = paste0(dir.res,"Artif2/model_A")
 pal.A = brewer.pal(4,"RdYlBu")[c(2,1,3,4)][1]
 
-models = c("Baseline_1816-2020","Modèle_A","Censure")
+models = c("GEV_1816-2020","Mod_A","Censure")
 dirs = c(Base.dir,A.dir,Censure.dir)
 pals = c(pal.Base,pal.A,pal.Censure) 
 
@@ -78,29 +78,51 @@ Quants100$model =fct_relevel(Quants100$model,
 Quants1000$model=fct_relevel(Quants1000$model,
                              as.vector(Quants100$model[c(1,3,2)]))
 
+### RESUME RESULTS
+ResAll = data.frame(model = Quants100$model,
+                    sd.Q100 = NA, mp.Q100 = NA, 
+                    sd.Q1000 = NA, mp.Q1000 = NA) 
+
+for(m in 1:length(models)){
+  ### Q100
+  ResAll[m,]$sd.Q100 = round( ((Quants100$Q_9 - Quants100$Mp)/2)[m] )
+  ResAll[m,]$mp.Q100 = round( Quants100$Mp[m] ) 
+  #Q1000
+  ResAll[m,]$sd.Q1000 = round( ((Quants1000$Q_9 - Quants1000$Mp)/2)[m] )
+  ResAll[m,]$mp.Q1000 = round( Quants1000$Mp[m] )
+} 
+
+### write resume results
+write.csv2(ResAll, paste0(dir.case, "/ResultsAll_Censure.csv"), row.names = F)
+
+
 ############ BARPLOT QUANTILES ############ 
 ### Q100
 BarQ100 = ggplot(data=Quants100, aes(x = model, y = Mp, ymin = Q_2, ymax = Q_9, fill = model))+
   geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
   geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
-  scale_fill_manual(values = pals)+
+  scale_fill_manual(values = pals,
+                    labels = c("\nGEV 1816-2020\n","\nMod. A : Binomiale\nQ histo. inconnu\n",
+                               "\nCensure\nQ histo. connu\n"))+
   # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
   ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
   theme_light(base_size = textsize)+
   ggtitle("Q100")+
-  scale_x_discrete(labels=c("GEV","A","Censure"))
+  scale_x_discrete(labels=c("GEV","Mod. A","Censure"))
 # scale_x_discrete(labels=c(rep("GEV",length(Quants100$model)-4),c("u0","uS","uN","uSN")))
 
 BarQ1000 = ggplot(data=Quants1000, aes(x = model, y = Mp, ymin = Q_2, ymax = Q_9, fill = model))+
   geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
   geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
-  scale_fill_manual(values = pals)+
+  scale_fill_manual(values = pals,
+                    labels = c("\nGEV 1816-2020\n","\nMod. A : Binomiale\nQ histo. inconnu\n",
+                               "\nCensure\nQ histo. connu\n"))+
   # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
   ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
   theme_light(base_size = textsize)+
   # ggtitle(paste0("Q1000 - sample ", s) )+
   ggtitle("Q1000")+
-  scale_x_discrete(labels=c("GEV","A","Censure"))
+  scale_x_discrete(labels=c("GEV","Mod. A","Censure"))
 
 ggarrange(BarQ100+coord_cartesian(ylim = c(5000,max(Quants1000$Q_9)) )+
             theme(axis.title.x = element_blank(),legend.title = element_blank()),

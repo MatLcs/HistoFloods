@@ -1,6 +1,6 @@
 require(lubridate);require(ggplot2);require(trend);require(ggpubr); require(forcats)
 require(cowplot);require(RSTooDs);require(evd);require(reshape);require(ggridges);
-require(RColorBrewer);require(beepr);require(GGally);require(psych)
+require(RColorBrewer);require(beepr);require(GGally);require(psych);library(Cairo)
 
 dir.all = "C://Users/mathieu.lucas/Desktop/GitMat/CruesHisto/"
 dir.data = paste0(dir.all,"Data/") 

@@ -7,8 +7,8 @@ Q = read.table("C://Users/mathieu.lucas/Desktop/GitMat/PropagMaxAn/Results/Quant
 Spags = read.table(paste0(dir.data,"Spags_uTot_Amax.txt"))
 #### Homogeneity of systematic records
 # plot(x=Q$an, y = Q$mp,type="l", ylab = "Discharge",xlab="Date")
-# mktrend = mk.test(Q$mp)
-# ptdate = pettitt.test(Q$mp)
+mktrend = mk.test(Q$mp)
+ptdate = pettitt.test(Q$mp)
 # mktrend$p.value<0.05
 # ptdate$p.value<0.05
 # #### Homogeneity of flood occurences
@@ -44,10 +44,10 @@ lines(x = PCX$AnExp, y =  PCX$EllipSup, lty = 2,col="blue")
 lines(x = PC4$AnExp, y =  PC4$EllipInf, lty = 2,col = "red")
 lines(x = PC4$AnExp, y =  PC4$EllipSup, lty = 2,col="red")
 #starting points
-points(x = PCX$AnneeCrue[1], y = PCX$FloodNumber[1], pch = 19,col = "indianred", cex = 1.5)
-points(x = tail(PCX$AnneeCrue,1),y = tail(PCX$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
-# points(x = tail(PC3$AnneeCrue,1),y = tail(PC3$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
-points(x = tail(PC4$AnneeCrue,1),y = tail(PC4$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
+points(x = PCX$AnneeCrue[1], y = PCX$FloodNumber[1], pch = 19,col = "black", cex = 1.5)
+points(x = tail(PCX$AnneeCrue,1),y = tail(PCX$FloodNumber,1),pch =19, col = "black", cex = 1.5)
+# points(x = tail(PC3$AnneeCrue,1),y = tail(PC3$FloodNumber,1),pch = 19, col = "black", cex = 1.5)
+points(x = tail(PC4$AnneeCrue,1),y = tail(PC4$FloodNumber,1),pch = 19, col = "black", cex = 1.5)
 #legend EN
 # legend(x = "topleft",legend = c("C3 & C4 floods",
 #                                 # "C3 floods",
@@ -68,8 +68,8 @@ legend(x = "topleft",legend = c("Catég. C3&C4",
                                 "Début/Fin",
                                 "Intervalle de conf. 95%"),
 
-       col = c( "blue","red","indianred","black"),lty = c(1,1,0,2),
-       pch = c(20, 20,20,NA),   pt.cex = c(1,1,2,1), cex = 1.2)
+       col = c( "blue","red","black","black"),lty = c(1,1,0,2),
+       pch = c(20, 20,19,NA),   pt.cex = c(1,1,2,1), cex = 1.2)
 # dev.off()
 
 
@@ -88,15 +88,15 @@ P8_b = PoissoN(Q$an[which(Q$mp>8000)],Andeb=1816,Anfin = 2020, Anrupt = list(194
   lines(x = P9$AnExp, y =  P9$EllipInf, lty = 2,col = "red")
   lines(x = P9$AnExp, y =  P9$EllipSup, lty = 2,col="red")
   #starting/end points
-  points(x = P7$AnneeCrue[1], y = P7$FloodNumber[1], pch = 19,col = "indianred", cex = 1.5)
-  points(x = tail(P7$AnneeCrue,1),y = tail(P7$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
-  points(x = tail(P9$AnneeCrue,1),y = tail(P9$FloodNumber,1),pch = 19, col = "indianred", cex = 1.5)
+  points(x = P7$AnneeCrue[1], y = P7$FloodNumber[1], pch = 19,col = "black", cex = 1.5)
+  points(x = tail(P7$AnneeCrue,1),y = tail(P7$FloodNumber,1),pch = 19, col = "black", cex = 1.5)
+  points(x = tail(P9$AnneeCrue,1),y = tail(P9$FloodNumber,1),pch = 19, col = "black", cex = 1.5)
   #legend expression(paste("Discharge [",m^3,".",s^-1,"]",sep=""))
   legend(x = "topleft",legend = c(expression(paste("Seuil de perc. 7000 ",m^3,"/",s,sep = "")),
                                   expression(paste("Seuil de perc. 9000 ",m^3,"/",s,sep = "")),
                                   "Début/Fin",
                                   "Intervalle de conf. 95%"),
-         col = c("blue","red","indianred","black"),lty = c(1,1,0,2),pch = c(20,20,20,NA),
+         col = c("blue","red","black","black"),lty = c(1,1,0,2),pch = c(20,20,20,NA),
                  pt.cex = c(1,1,2,1), cex = 1.2)
 # dev.off()
 
