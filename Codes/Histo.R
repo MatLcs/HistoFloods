@@ -163,8 +163,12 @@ for(s in 1:length(samples)){
   
   ### RESULTS TIDYING
   Params = melt.list(ParamAll) ; Params$model = as.factor(Params$model)
+  Params$model = fct_relevel(Params$model, 
+                             as.vector(unique(Params$model)[c(5:length(Mp_par),1,2,3,4)]) )
   Quants100 = cast(melt.list(Quant100) );  Quants1000 = cast(melt.list(Quant1000) ) 
-  ParamsMp = melt.list(Mp_par) 
+  ParamsMp = melt.list(Mp_par) ; ParamsMp$model = as.factor(ParamsMp$model)
+  ParamsMp$model = fct_relevel(ParamsMp$model, 
+                             as.vector(unique(ParamsMp$model)[c(5:length(Mp_par),1,2,3,4)]) )
   Quants100$model = as.factor(Quants100$model);Quants1000$model = as.factor(Quants1000$model)
   Quants100$model =fct_relevel(Quants100$model,
                                as.vector(Quants100$model[c(5:length(Mp_par),1,2,3,4)]))
@@ -173,7 +177,8 @@ for(s in 1:length(samples)){
 
   
   #### DF RESUME RESULTS
-  ResAll = data.frame(model = c(models,"Baseline"), sd.S=NA, mp.S=NA, sd.t = NA, mp.t = NA,
+  ResAll = data.frame(model = c(models,paste0("GEV",Baselines[1:(-4+length(Quants100$model))])),
+                      sd.S=NA, mp.S=NA, sd.t = NA, mp.t = NA,
                       sd.xi = NA, mp.xi = NA,  sd.Q100 = NA, mp.Q100 = NA, 
                       sd.Q1000 = NA, mp.Q1000 = NA) 
   
@@ -201,18 +206,22 @@ for(s in 1:length(samples)){
     ResAll[m,]$sd.Q1000 = round( ((Quants1000$Q_9 - Quants1000$Mp)/2)[m] )
     ResAll[m,]$mp.Q1000 = round( Quants1000$Mp[m] )
   } 
-  ### BASELINE
-  ### xi
-  ResAll[5,]$sd.xi = round(sd(Params$value[which(Params$model == "GEV 1816-2020" & 
-                                                   Params$variable == "Shape") ] ),3)
-  ResAll[5,]$mp.xi = round(ParamsMp$value[which(ParamsMp$model == "GEV 1816-2020" & 
-                                                  ParamsMp$variable == "Form") ],3)
-  ### Q100
-  ResAll[5,]$sd.Q100 = round( ((Quants100$Q_9 - Quants100$Mp)/2)[5] )
-  ResAll[5,]$mp.Q100 = round( Quants100$Mp[5] ) 
-  #Q1000
-  ResAll[5,]$sd.Q1000 = round( ((Quants1000$Q_9 - Quants1000$Mp)/2)[5] )
-  ResAll[5,]$mp.Q1000 = round( Quants1000$Mp[5] )
+  ### BASELINES
+  for(b in 1:(-4+length(Quants100$model))){
+    ### xi
+    ResAll[(4+b),]$sd.xi = round(sd(Params$value[which(
+                                          Params$model == paste0("GEV ", Baselines[b]) & 
+                                          Params$variable == "Shape") ] ),3)
+    ResAll[(4+b),]$mp.xi = round(ParamsMp$value[which(
+                                          ParamsMp$model == paste0("GEV ", Baselines[b]) & 
+                                          ParamsMp$variable == "Form") ],3)
+    ### Q100
+    ResAll[(4+b),]$sd.Q100 = round( ((Quants100$Q_9 - Quants100$Mp)/2)[(4+b)] )
+    ResAll[(4+b),]$mp.Q100 = round( Quants100$Mp[(4+b)] ) 
+    #Q1000
+    ResAll[(4+b),]$sd.Q1000 = round( ((Quants1000$Q_9 - Quants1000$Mp)/2)[(4+b)] )
+    ResAll[(4+b),]$mp.Q1000 = round( Quants1000$Mp[(4+b)] )
+  }
   ### write resume results
   write.csv2(ResAll, paste0(dir.res, samples[s],"/ResultsAll",samples[s],".csv"), row.names = F)
   
@@ -252,26 +261,30 @@ for(s in 1:length(samples)){
   
   
   ############ PLOT POSTERIOR PARAMETERS ############ 
+  
   ####  SHAPE
   GGShape = ggplot(Params[which(Params$variable=="Shape"),], 
                  aes(y = model, x = value, group = model, fill = model)) +
     geom_density_ridges(alpha=0.7,stat = "binline",bins = 60, scale = 1.2,color = NA)+
-    geom_segment(data = ParamsMp[which(ParamsMp$variable == "Form"),],
+    geom_segment(data = ParamsMp[
+                  which(ParamsMp$variable == "Form"),][rev(c(5:length(Quants100$model),1,2,3,4)),],
                  aes(x = value, xend = value,
                      y=(1:length(Quants100$model)),yend=(2:(length(Quants100$model)+1)),color = model)
                  , lwd = 1)+
     scale_x_continuous(expand = c(0, 0))+
-    scale_y_discrete(expand = c(0, 0), 
-                     labels = rev(c(rep("GEV",(length(Quants100$model)-4)),rev(models)))) +
+    scale_y_discrete(expand = c(0, 0),
+                     limits = rev(as.vector(unique(ParamsMp$model)[c(5:length(Mp_par),1,2,3,4)]) ),
+                     labels = rev(c(rep("GEV",(length(Quants100$model)-4)),(models))) )+
     theme_light(base_size = textsize)+
-    scale_fill_manual(values = c(palmod,palbase[1:(length(Quants100$model)-4)]) )+
-    scale_color_manual(values = c(palmod,palbase[1:(length(Quants100$model)-4)]) )+
+    scale_fill_manual(values = c(palbase[1:(length(Quants100$model)-4)],palmod) )+
+    scale_color_manual(values = (c(palbase[1:(length(Quants100$model)-4)],palmod) ) )+
     xlab("[-]")+
     theme(axis.title.y = element_blank(),legend.title = element_blank())+
     # ggtitle("GEV Shape parameter")+
     ggtitle("Paramètre de forme \u03bE")+
     coord_cartesian(xlim=c(0-3*sd(Params$value[which(Params$variable=="Shape")]),
                            0+4*sd(Params$value[which(Params$variable=="Shape")])))
+  
   
   ggsave(path = paste0(dir.plots,samples[s]), filename = paste0("Shape_",samples[s],".pdf"),
          device = cairo_pdf, width = 10,height = 8)

@@ -101,32 +101,32 @@ P8_b = PoissoN(Q$an[which(Q$mp>8000)],Andeb=1816,Anfin = 2020, Anrupt = list(194
 # dev.off()
 
 #### Perception threshold determination
-# Q = Q[which(Q$an < 2000),]
-# Q$type = "none"
-## associate floods from systematic period to pichard flood type
-# for(y in 1:length(CXall$An)) { Q$type[which(Q$an == CXall$An[y])] = CXall$Cat[y] }
+Q = Q[which(Q$an < 2000),]
+Q$type = "none"
+# associate floods from systematic period to pichard flood type
+for(y in 1:length(CXall$An)) { Q$type[which(Q$an == CXall$An[y])] = CXall$Cat[y] }
 ## minimum discharge of C3 flood
-# Q[which(Q$type != "none")[(which.min(Q$mp[which(Q$type != "none")]))],]
-# TsC3 = Q[which(Q$type != "none")[(which.min(Q$mp[which(Q$type != "none")]))],]
-# TsC4 =  Q[which(Q$type == "C4")[(which.min(Q$mp[which(Q$type == "C4")]))],]
+Q[which(Q$type != "none")[(which.min(Q$mp[which(Q$type != "none")]))],]
+TsC3 = Q[which(Q$type != "none")[(which.min(Q$mp[which(Q$type != "none")]))],]
+TsC4 =  Q[which(Q$type == "C4")[(which.min(Q$mp[which(Q$type == "C4")]))],]
 
 # write.table(TsC3, paste0(dir.data,"ThresholdC3.txt"),row.names = F)
 # write.table(TsC4,  paste0(dir.data,"ThresholdC4.txt"),row.names = F)
 
-# Categ = 
-# ggplot(data=Q)+
-#   geom_errorbar(aes(x = an, ymin = tot2.5,ymax=tot97.5,color=type))+
-#   geom_point(aes(x = an, y=mp ,color=type))+
-#   geom_line(aes(x = an, y = rep(min(mp[which(type=="C3")]),length(an))),
-#             col = "blue",alpha = 0.6,lty=2,lwd=1)+
-#   geom_line(aes(x = an, y = rep(min(mp[which(type=="C4")]),length(an))),
-#             col="red",alpha = 0.6,lty=2,lwd=1)+
-#   geom_line(aes(x = an, y = rep(TsC3$tot2.5,length(an))),
-#             col="black",alpha = 0.6,lty=2,lwd=1)+
-#   scale_color_manual("Flood type",values=c("blue","red","grey"))+
-#   theme_light()+
-#   labs(x="Years",y="Discharge [m3/s]")+
-#   coord_cartesian(xlim = c(1817,1998))
+# Categ =
+ggplot(data=Q)+
+  geom_errorbar(aes(x = an, ymin = tot2.5,ymax=tot97.5,color=type))+
+  geom_point(aes(x = an, y=mp ,color=type))+
+  geom_line(aes(x = an, y = rep(min(mp[which(type=="C3")]),length(an))),
+            col = "blue",alpha = 0.6,lty=2,lwd=1)+
+  geom_line(aes(x = an, y = rep(min(mp[which(type=="C4")]),length(an))),
+            col="red",alpha = 0.6,lty=2,lwd=1)+
+  geom_line(aes(x = an, y = rep(TsC3$tot2.5,length(an))),
+            col="black",alpha = 0.6,lty=2,lwd=1)+
+  scale_color_manual("Flood type",values=c("blue","red","grey"))+
+  theme_light()+
+  labs(x="Years",y="Discharge [m3/s]")+
+  coord_cartesian(xlim = c(1817,1998))
 
 # ggsave(path = dir.plots, filename = "C3-C4_SystematicPeriod.pdf", width = 12, height = 8)
 
