@@ -12,6 +12,9 @@ endhistartif = 1969
 #### Run or plot only ?
 RUN = F
 
+#### PLOTS EN
+dir.plots = "C://Users/mathieu.lucas/Desktop/GitMat/CruesHisto/PlotsEN/"
+
 ###### DATA LOADING
 ###Histrhone data 
 Call = read.csv2(paste0(dir.data,"CX_All.csv"))
@@ -56,14 +59,13 @@ Baselines =     c("1816-2020","1970-2020")
 Qbaselines =    list(Q, Q[which(Q$an>endhistartif),])
 SpagsBaseline = list(Spags[, (1:Nspag) ], Spags[which(Q$an>endhistartif), (1:Nspag) ])
 
-# #### create dirs
+#### create dirs
 # for(s in 1:length(samples)){
-#   ds=paste0(dir.res,samples[s]); dir.create(ds, showWarnings = F)
-#   for(m in 1:length(models)){
-#     dir.create(paste0(ds,"/model_",models[m]), showWarnings = F)}
-#   dir.create(paste0(dir.plots,samples[s]),showWarnings = F)}
-# for(b in 1:length(Baselines)){dir.create(paste0(dir.res,"/Baseline_",
-        # Baselines[b]),showWarnings = F)}
+  # ds=paste0(dir.res,samples[s]); dir.create(ds, showWarnings = F)
+  # for(m in 1:length(models)){
+    # dir.create(paste0(ds,"/model_",models[m]), showWarnings = F)}
+    # dir.create(paste0(dir.plots,samples[s]),showWarnings = F)}
+# for(b in 1:length(Baselines)){dir.create(paste0(dir.res,"/Baseline_",Baselines[b]),showWarnings = F)}
 
 # verif
 # for(s in 1:length(samples)){
@@ -231,10 +233,11 @@ for(s in 1:length(samples)){
     geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
     geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
     scale_fill_manual(values = c(palbase[1:(length(Quants100$model)-4)],palmod))+
-    # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-    ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+    ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+    # ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
     theme_light(base_size = textsize)+
-    ggtitle(paste0("Q100 - Echantillon n°", s))+
+    ggtitle(paste0("Q100 - Sample n°", s))+
+    # ggtitle(paste0("Q100 - Echantillon n°", s))+
     scale_x_discrete(labels=c(rep("GEV",length(Quants100$model)-4),models))
     # scale_x_discrete(labels=c(rep("GEV",length(Quants100$model)-4),c("u0","uS","uN","uSN")))
   
@@ -242,11 +245,11 @@ for(s in 1:length(samples)){
     geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
     geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
     scale_fill_manual(values = c(palbase[1:(length(Quants100$model)-4)],palmod))+
-    # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-    ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+    ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+    # ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
     theme_light(base_size = textsize)+
-    # ggtitle(paste0("Q1000 - sample ", s) )+
-    ggtitle(paste0("Q1000 - Echantillon n°", s) )+
+    ggtitle(paste0("Q1000 - Sample n°", s) )+
+    # ggtitle(paste0("Q1000 - Echantillon n°", s) )+
     scale_x_discrete(labels=c(rep("GEV",length(Quants100$model)-4),models))
     
   ggarrange(BarQ100+coord_cartesian(ylim = c(5000,max(Quants1000$Q_9)) )+
@@ -281,7 +284,8 @@ for(s in 1:length(samples)){
     xlab("[-]")+
     theme(axis.title.y = element_blank(),legend.title = element_blank())+
     # ggtitle("GEV Shape parameter")+
-    ggtitle("Paramètre de forme \u03bE")+
+    # ggtitle("Paramètre de forme \u03bE")+
+    ggtitle("Shape parameter \u03bE")+
     coord_cartesian(xlim=c(0-3*sd(Params$value[which(Params$variable=="Shape")]),
                            0+4*sd(Params$value[which(Params$variable=="Shape")])))
   
@@ -311,12 +315,12 @@ for(s in 1:length(samples)){
         xlim=c(Thres[s]-2*sdThres, Thres[s]+2*sdThres))+
     theme_light(base_size = textsize)+
     geom_vline(xintercept = Thres[s], lwd = 1, lty = 2)+
-    # xlab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-    # ylab("Density")+
-    # ggtitle("Perception threshold")+
-    xlab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
-    ylab("Densité")+
-    ggtitle("Seuil de perception S")+
+    xlab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+    ylab("Density")+
+    ggtitle("Perception threshold")+
+    # xlab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+    # ylab("Densité")+
+    # ggtitle("Seuil de perception S")+
     theme(legend.title = element_blank())
 
   #### Historical period length
@@ -345,7 +349,7 @@ for(s in 1:length(samples)){
     geom_vline(data = ParamsMp[which(ParamsMp$variable == "NBan"),],
                aes(xintercept = endPhist-value, color = model), lwd = 1, alpha = 1,
                show.legend = T, lty=1)+
-    geom_vline(aes(xintercept = StartH[s], color = "Référence"), lwd = 1, lty = 2)+
+    geom_vline(aes(xintercept = StartH[s], color = "Reference"), lwd = 1, lty = 2)+
     geom_vline(aes(xintercept = T_Ilaria, color = "Prosdocimi"), lwd = 1, lty = 2)+
     geom_vline(aes(xintercept = T_RpThres, color = "T_GEV(S)"), lwd = 1, lty = 2)+
     scale_fill_manual(values = c(colprior, palmod) )+
@@ -357,12 +361,12 @@ for(s in 1:length(samples)){
                     xlim = c( endPhist-(max(priornban$value)+2),
                               endPhist-NbanS[s]+2 )  )+
     theme_light(base_size = textsize)+
-    # xlab("Year")+
-    # ylab("Density")+
-    # ggtitle("Start date of historical period")+
-    xlab("Année")+
-    ylab("Densité")+
-    ggtitle("Date de début de la période historique t*")+
+    xlab("Year")+
+    ylab("Density")+
+    ggtitle("Start date of historical period")+
+    # xlab("Année")+
+    # ylab("Densité")+
+    # ggtitle("Date de début de la période historique t*")+
     theme(legend.title = element_blank())
     
   ## ARRANGE
@@ -380,16 +384,16 @@ for(s in 1:length(samples)){
     
     GGQuants[[b]] = ggplot()+
       geom_ribbon(data=QuantsAll[[length(models)+b]],aes(x=Pr, ymin = Q_2, ymax=Q_9,
-                                             # fill="95% uncertainty interval"),alpha=0.8)+
-                                             fill="Intervalle de conf. 95%"),alpha=0.8)+
+                                             fill="95% uncertainty interval"),alpha=0.8)+
+                                             # fill="Intervalle de conf. 95%"),alpha=0.8)+
       geom_line(data=QuantsAll[[length(models)+b]],aes(x=Pr,y=Mp,col="Maxpost"),lwd=1)+
       geom_point(data = Freq, aes(x=Pr, y = mp))+
       geom_errorbar(data=Freq, aes(x=Pr,ymin = tot2.5, ymax = tot97.5))+
       scale_x_continuous(trans="log10")+
-      # xlab("Return period [years]")+
-      # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-      xlab("Période de retour [années]")+
-      ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+      xlab("Return period [years]")+
+      ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+      # xlab("Période de retour [années]")+
+      # ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
       scale_fill_manual(name = element_blank(),values = c("#67a9cf"))+
       scale_color_manual(values = c("yellow"))+ 
       theme_bw(base_size=textsize)+
@@ -456,8 +460,8 @@ for(s in 1:length(samples)){
     ### PLOT QUANTS
     GGQuants[[m+(length(Quants1000$model)-4)]] = ggplot()+
       geom_ribbon(data=QuantsAll[[m]],aes(x=Pr, ymin = Q_2, ymax=Q_9,
-                                             # fill="95% uncertainty interval"),alpha=0.8)+
-                                          fill="Intervalle de conf. 95%"),alpha=0.8)+
+                                             fill="95% uncertainty interval"),alpha=0.8)+
+                                          # fill="Intervalle de conf. 95%"),alpha=0.8)+
       geom_line(data=QuantsAll[[m]],aes(x=Pr,y=Mp,col="Maxpost"),lwd=1)+
       geom_errorbar(data=Freq[which(Freq$flag=="Cont"),],
                     aes(x=Pr,ymin = tot2.5, ymax = tot97.5))+
@@ -469,10 +473,10 @@ for(s in 1:length(samples)){
       geom_point(data = Freq[which(Freq$flag=="Hist"),], aes(x=Pr,y=tot2.5),shape = 17,
                  col="lightgrey")+
       scale_x_continuous(trans="log10")+
-      # xlab("Return period [years]")+
-      # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-      xlab("Période de retour [années]")+
-      ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+      xlab("Return period [years]")+
+      ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+      # xlab("Période de retour [années]")+
+      # ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
       scale_fill_manual(name = element_blank(),
                         values = c("#67a9cf"))+
       scale_color_manual(values = c("yellow"))+
@@ -481,8 +485,8 @@ for(s in 1:length(samples)){
       theme(legend.title=element_blank(),
             plot.title = element_text(hjust = 0.01, vjust = -7),
             legend.position = c(0.8,0.2))+
-      # ggtitle(paste0("Model ",models[m]))
-      ggtitle(paste0("Modèle ",models[m]," ",shortm[m]))
+      ggtitle(paste0("Model ",models[m]))
+      # ggtitle(paste0("Modèle ",models[m]," ",shortm[m]))
     
   }
   

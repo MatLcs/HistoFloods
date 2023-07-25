@@ -9,6 +9,8 @@ endhistartif = 1970
 Thres = 9000
 Nbhists = endhistartif - starthistartif
 Run = F
+#### PLOTS EN
+dir.plots = "C://Users/mathieu.lucas/Desktop/GitMat/CruesHisto/PlotsEN/"
 
 ###### DATA LOADING
 ###Histrhone data 
@@ -67,7 +69,6 @@ for(m in 1:length(models)){
   Quant100[[m]]$model = models[m]; #Quant100[[m]]$sample = samples[s]
   Quant1000[[m]] = read.table(paste0(dirs[[m]],"/Quants.txt"), header = T)[ind1000,(2:4)]
   Quant1000[[m]]$model = models[m];# Quant1000[[m]]$sample = samples[s]
-
 }
 
 
@@ -102,10 +103,12 @@ BarQ100 = ggplot(data=Quants100, aes(x = model, y = Mp, ymin = Q_2, ymax = Q_9, 
   geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
   geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
   scale_fill_manual(values = pals,
-                    labels = c("\nGEV 1816-2020\n","\nMod. A : Binomiale\nQ histo. inconnu\n",
-                               "Mod. E : \nQ histo. connu\n"))+
-  # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-  ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+                    # labels = c("\nGEV 1816-2020\n","\nMod. A : Binomiale\nQ histo. inconnu\n",
+                    #            "Mod. E : \nQ histo. connu\n"))+
+                  labels = c("\nGEV 1816-2020\n","\nMod. A : Binomial\nQ unknown\n",
+                  "Mod. E : \nQ known\n"))+
+  ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+  # ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
   theme_light(base_size = textsize)+
   ggtitle("Q100")+
   scale_x_discrete(labels=c("GEV","Mod. A","Mod. E"))
@@ -115,10 +118,12 @@ BarQ1000 = ggplot(data=Quants1000, aes(x = model, y = Mp, ymin = Q_2, ymax = Q_9
   geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
   geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
   scale_fill_manual(values = pals,
-                    labels = c("\nGEV 1816-2020\n","\nMod. A : Binomiale\nQ histo. inconnu\n",
-                               "Mod. E : \nQ histo. connu\n"))+
-  # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-  ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+                    # labels = c("\nGEV 1816-2020\n","\nMod. A : Binomiale\nQ histo. inconnu\n",
+                    #            "Mod. E : \nQ histo. connu\n"))+
+                   labels = c("\nGEV 1816-2020\n","\nMod. A : Binomial\nQ unknown\n",
+                    "Mod. E : \nQ known\n"))+
+  ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+  # ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
   theme_light(base_size = textsize)+
   # ggtitle(paste0("Q1000 - sample ", s) )+
   ggtitle("Q1000")+

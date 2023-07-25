@@ -9,6 +9,9 @@ endhist = 1815
 
 #### Run or plot only ?
 RUN = F
+#### PLOTS EN
+dir.plots = "C://Users/mathieu.lucas/Desktop/GitMat/CruesHisto/PlotsEN/"
+
 
 ## DIRS
 case = "C4short"
@@ -37,7 +40,7 @@ StartH = starthist
 
 MaxUnif_Nban = (Occs[1] - starthist)*2
 #### 4 models
-models =  "D"
+models =  "D*"
 shortm = ": uS&t*"
 distsTs = "Gaussian"
 distsNb = "Uniform"
@@ -173,20 +176,20 @@ BarQ100 = ggplot(data=Quants100, aes(x = model, y = Mp, ymin = Q_2, ymax = Q_9, 
   geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
   geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
   scale_fill_manual(values = c(palbase,palmod))+
-  # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-  ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+  ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+  # ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
   theme_light(base_size = textsize)+
-  ggtitle(paste0("Q100 - Echantillon n° 2"))+
+  ggtitle(paste0("Q100 - Sample n° 2"))+
   scale_x_discrete(labels=c('GEV',models))
 
 BarQ1000 = ggplot(data=Quants1000, aes(x = model, y = Mp, ymin = Q_2, ymax = Q_9, fill = model))+
   geom_bar( stat="identity",width = 0.8,alpha = 0.7)+
   geom_errorbar(width=0.3, colour="black", alpha=0.6, size=0.6)+
   scale_fill_manual(values = c(palbase,palmod))+
-  # ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-  ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+  ylab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+  # ylab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
   theme_light(base_size = textsize)+
-  ggtitle(paste0("Q1000 - Echantillon n° 2"))+
+  ggtitle(paste0("Q1000 - Sample n° 2"))+
   scale_x_discrete(labels=c('GEV',models))
 
 ggarrange(BarQ100+coord_cartesian(ylim = c(5000,max(Quants1000$Q_9)) )+
@@ -216,8 +219,8 @@ GGShape = ggplot(Params[which(Params$variable=="Shape"),],
   scale_color_manual(values = c(palmod,palbase) )+
   xlab("[-]")+
   theme(axis.title.y = element_blank(),legend.title = element_blank())+
-  # ggtitle("GEV Shape parameter")+
-  ggtitle("Paramètre de forme \u03bE")+
+  ggtitle("GEV Shape parameter \u03bE")+
+  # ggtitle("Paramètre de forme \u03bE")+
   coord_cartesian(xlim=c(0-2*sd(Params$value[which(Params$variable=="Shape")]),
                          0+5*sd(Params$value[which(Params$variable=="Shape")])))
 
@@ -243,16 +246,16 @@ GGThres = ggplot( rbind(priorthres,Params[which(Params$variable == "Thres" ),]),
   scale_fill_manual(values = c(colprior, palmod) )+
   scale_color_manual(values = palmod)+
   coord_cartesian(ylim=c(0,1.5*max(density(Params$value[which(Params$variable=="Thres" &
-                                            Params$sample==samples & Params$model=="D: uS&t*")])$y)),
+                                            Params$sample==samples & Params$model=="D*: uS&t*")])$y)),
                   xlim=c(Thres-2.5*sdThres, Thres+3*sdThres))+
   theme_light(base_size = textsize)+
   geom_vline(xintercept = Thres, lwd = 1, lty = 2)+
-  # xlab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
-  # ylab("Density")+
-  # ggtitle("Perception threshold")+
-  xlab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
-  ylab("Densité")+
-  ggtitle("Seuil de perception S")+
+  xlab(expression(paste("Discharge [",m^3,".",s^-1,"]",sep="")))+
+  ylab("Density")+
+  ggtitle("Perception threshold")+
+  # xlab(expression(paste("Débit [",m^3,"/",s,"]",sep="")))+
+  # ylab("Densité")+
+  # ggtitle("Seuil de perception S")+
   theme(legend.title = element_blank())
 
 
@@ -283,7 +286,7 @@ GGNban = ggplot(rbind(priornban,Params[which(Params$variable == "Nban"),]),
   geom_vline(data = ParamsMp[which(ParamsMp$variable == "NBan"),],
              aes(xintercept = endPhist-value, color = model), lwd = 1, alpha = 1,
              show.legend = T, lty=1)+
-  geom_vline(aes(xintercept = StartH, color = "Référence"), lwd = 1, lty = 2)+
+  geom_vline(aes(xintercept = StartH, color = "Reference"), lwd = 1, lty = 2)+
   geom_vline(aes(xintercept = T_Ilaria, color = "Prosdocimi"), lwd = 1, lty = 2)+
   geom_vline(aes(xintercept = T_RpThres, color = "T_GEV(S)"), lwd = 1, lty = 2)+
   scale_fill_manual(values = c(colprior, palmod) )+
@@ -295,12 +298,12 @@ GGNban = ggplot(rbind(priornban,Params[which(Params$variable == "Nban"),]),
                   xlim = c( endPhist-(max(priornban$value)+5),
                             endPhist-NbanS+5 )  )+
   theme_light(base_size = textsize)+
-  # xlab("Year")+
-  # ylab("Density")+
-  # ggtitle("Start date of historical period")+
-  xlab("Année")+
-  ylab("Densité")+
-  ggtitle("Date de début de la période historique t*")+
+  xlab("Year")+
+  ylab("Density")+
+  ggtitle("Start date of historical period")+
+  # xlab("Année")+
+  # ylab("Densité")+
+  # ggtitle("Date de début de la période historique t*")+
   theme(legend.title = element_blank())
 
 ## ARRANGE
