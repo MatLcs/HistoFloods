@@ -181,8 +181,8 @@ for(s in 1:length(samples)){
   #### DF RESUME RESULTS
   ResAll = data.frame(model = c(models,paste0("GEV",Baselines[1:(-4+length(Quants100$model))])),
                       sd.S=NA, mp.S=NA, sd.t = NA, mp.t = NA,
-                      sd.xi = NA, mp.xi = NA,  sd.Q100 = NA, mp.Q100 = NA, 
-                      sd.Q1000 = NA, mp.Q1000 = NA) 
+                      sd.loc=NA, mp.loc=NA, sd.ech=NA, mp.ech=NA, sd.shape = NA, mp.shape = NA,
+                      sd.Q100 = NA, mp.Q100 = NA, sd.Q1000 = NA, mp.Q1000 = NA) 
   
   endPhist = Qconts[[s]]$an[1]
   for(m in 1:length(models)){
@@ -194,12 +194,22 @@ for(s in 1:length(samples)){
     ### t*
     ResAll[m,]$sd.t = round(sd(Params$value[which(Params$model == paste0(models[m],shortm[m]) & 
                                               Params$variable == "Nban") ] ) )
-    ResAll[m,]$mp.t = round(endPhist - ParamsMp$value[which(ParamsMp$model == paste0(models[m],shortm[m]) & 
-                                             ParamsMp$variable == "NBan") ] )
-    ### xi
+    ResAll[m,]$mp.t = round(endPhist - ParamsMp$value[which(ParamsMp$model == paste0(models[m],
+                            shortm[m]) & ParamsMp$variable == "NBan") ] )
+    ### loc
+    ResAll[m,]$sd.loc = round(sd(Params$value[which(Params$model == paste0(models[m],shortm[m]) & 
+                                                     Params$variable == "Pos") ] ),3)
+    ResAll[m,]$mp.loc = round(ParamsMp$value[which(ParamsMp$model == paste0(models[m],shortm[m]) & 
+                                                    ParamsMp$variable == "Pos") ],3)
+    ### ech
     ResAll[m,]$sd.xi = round(sd(Params$value[which(Params$model == paste0(models[m],shortm[m]) & 
-                                              Params$variable == "Shape") ] ),3)
+                                                     Params$variable == "Ech") ] ),3)
     ResAll[m,]$mp.xi = round(ParamsMp$value[which(ParamsMp$model == paste0(models[m],shortm[m]) & 
+                                                    ParamsMp$variable == "Ech") ],3)
+    ### shape
+    ResAll[m,]$sd.shape = round(sd(Params$value[which(Params$model == paste0(models[m],shortm[m]) & 
+                                              Params$variable == "Shape") ] ),3)
+    ResAll[m,]$mp.shape = round(ParamsMp$value[which(ParamsMp$model == paste0(models[m],shortm[m])& 
                                              ParamsMp$variable == "Form") ],3)
     ### Q100
     ResAll[m,]$sd.Q100 = round( ((Quants100$Q_9 - Quants100$Mp)/2)[m] )
@@ -210,13 +220,23 @@ for(s in 1:length(samples)){
   } 
   ### BASELINES
   for(b in 1:(-4+length(Quants100$model))){
-    ### xi
-    ResAll[(4+b),]$sd.xi = round(sd(Params$value[which(
-                                          Params$model == paste0("GEV ", Baselines[b]) & 
-                                          Params$variable == "Shape") ] ),3)
-    ResAll[(4+b),]$mp.xi = round(ParamsMp$value[which(
-                                          ParamsMp$model == paste0("GEV ", Baselines[b]) & 
-                                          ParamsMp$variable == "Form") ],3)
+    ### Loc
+    ResAll[(4+b),]$sd.loc = round(sd(Params$value[which(
+                Params$model == paste0("GEV ", Baselines[b]) & Params$variable == "Pos") ] ),3)
+    ResAll[(4+b),]$mp.loc = round(ParamsMp$value[which(
+                ParamsMp$model == paste0("GEV ", Baselines[b]) & ParamsMp$variable == "Pos") ],3)
+    
+    ### Ech
+    ResAll[(4+b),]$sd.ech = round(sd(Params$value[which(
+                Params$model == paste0("GEV ", Baselines[b]) & Params$variable == "Ech") ] ),3)
+    ResAll[(4+b),]$mp.ech = round(ParamsMp$value[which(
+                ParamsMp$model == paste0("GEV ", Baselines[b]) & ParamsMp$variable == "Ech") ],3)
+    
+    ### Shape
+    ResAll[(4+b),]$sd.shape = round(sd(Params$value[which(
+                Params$model == paste0("GEV ", Baselines[b]) & Params$variable == "Shape") ] ),3)
+    ResAll[(4+b),]$mp.shape = round(ParamsMp$value[which(
+                ParamsMp$model == paste0("GEV ", Baselines[b]) & ParamsMp$variable == "Form") ],3)
     ### Q100
     ResAll[(4+b),]$sd.Q100 = round( ((Quants100$Q_9 - Quants100$Mp)/2)[(4+b)] )
     ResAll[(4+b),]$mp.Q100 = round( Quants100$Mp[(4+b)] ) 
@@ -265,6 +285,62 @@ for(s in 1:length(samples)){
   
   ############ PLOT POSTERIOR PARAMETERS ############ 
   
+  ####  Position
+  GGPos = ggplot(Params[which(Params$variable=="Pos"),],
+                   aes(y = model, x = value, group = model, fill = model)) +
+    geom_density_ridges(alpha=0.7,stat = "binline",bins = 60, scale = 1.2,color = NA)+
+    geom_segment(data = ParamsMp[
+      which(ParamsMp$variable == "Pos"),][rev(c(5:length(Quants100$model),1,2,3,4)),],
+      aes(x = value, xend = value,
+          y=(1:length(Quants100$model)),yend=(2:(length(Quants100$model)+1)),color = model)
+      , lwd = 1)+
+    scale_x_continuous(expand = c(0, 0))+
+    scale_y_discrete(expand = c(0, 0),
+                     limits = rev(as.vector(unique(ParamsMp$model)[c(5:length(Mp_par),1,2,3,4)]) ),
+                     labels = rev(c(rep("GEV",(length(Quants100$model)-4)),(models))) )+
+    theme_light(base_size = textsize)+
+    scale_fill_manual(values = c(palbase[1:(length(Quants100$model)-4)],palmod) )+
+    scale_color_manual(values = (c(palbase[1:(length(Quants100$model)-4)],palmod) ) )+
+    xlab("[-]")+
+    theme(axis.title.y = element_blank(),legend.title = element_blank())+
+    ggtitle("Location parameter \u03bC")+
+    coord_cartesian(xlim = c( mean(ParamsMp$value[which(ParamsMp$variable=="Pos")]) - 
+                              4*sd(Params$value[which(Params$variable=="Pos")]),
+                              mean(ParamsMp$value[which(ParamsMp$variable=="Pos")]) +
+                              4*sd(Params$value[which(Params$variable=="Pos")])
+                            ))
+
+  ggsave(path = paste0(dir.plots,samples[s]), filename = paste0("Loc_",samples[s],".pdf"),
+         device = cairo_pdf, width = 10,height = 8)
+  
+  ####  Echelle
+  GGEch = ggplot(Params[which(Params$variable=="Ech"),],
+                   aes(y = model, x = value, group = model, fill = model)) +
+    geom_density_ridges(alpha=0.7,stat = "binline",bins = 60, scale = 1.2,color = NA)+
+    geom_segment(data = ParamsMp[
+      which(ParamsMp$variable == "Ech"),][rev(c(5:length(Quants100$model),1,2,3,4)),],
+      aes(x = value, xend = value,
+          y=(1:length(Quants100$model)),yend=(2:(length(Quants100$model)+1)),color = model)
+      , lwd = 1)+
+    scale_x_continuous(expand = c(0, 0))+
+    scale_y_discrete(expand = c(0, 0),
+                     limits = rev(as.vector(unique(ParamsMp$model)[c(5:length(Mp_par),1,2,3,4)]) ),
+                     labels = rev(c(rep("GEV",(length(Quants100$model)-4)),(models))) )+
+    theme_light(base_size = textsize)+
+    scale_fill_manual(values = c(palbase[1:(length(Quants100$model)-4)],palmod) )+
+    scale_color_manual(values = (c(palbase[1:(length(Quants100$model)-4)],palmod) ) )+
+    xlab("[-]")+
+    theme(axis.title.y = element_blank(),legend.title = element_blank())+
+    ggtitle("Scale parameter \u03C3")+
+    coord_cartesian(xlim = c( mean(ParamsMp$value[which(ParamsMp$variable=="Ech")]) - 
+                              4*sd(Params$value[which(Params$variable=="Ech")]),
+                            mean(ParamsMp$value[which(ParamsMp$variable=="Ech")]) +
+                              4*sd(Params$value[which(Params$variable=="Ech")])
+                              ))
+
+  ggsave(path = paste0(dir.plots,samples[s]), filename = paste0("Ech_",samples[s],".pdf"),
+         device = cairo_pdf, width = 10,height = 8)
+  
   ####  SHAPE
   GGShape = ggplot(Params[which(Params$variable=="Shape"),], 
                  aes(y = model, x = value, group = model, fill = model)) +
@@ -286,8 +362,11 @@ for(s in 1:length(samples)){
     # ggtitle("GEV Shape parameter")+
     # ggtitle("Paramètre de forme \u03bE")+
     ggtitle("Shape parameter \u03bE")+
-    coord_cartesian(xlim=c(0-3*sd(Params$value[which(Params$variable=="Shape")]),
-                           0+4*sd(Params$value[which(Params$variable=="Shape")])))
+    coord_cartesian(xlim = c( mean(ParamsMp$value[which(ParamsMp$variable=="Form")]) - 
+                                4.5*sd(Params$value[which(Params$variable=="Shape")]),
+                              mean(ParamsMp$value[which(ParamsMp$variable=="Form")]) +
+                                4.5*sd(Params$value[which(Params$variable=="Shape")])
+    ))
   
   
   ggsave(path = paste0(dir.plots,samples[s]), filename = paste0("Shape_",samples[s],".pdf"),

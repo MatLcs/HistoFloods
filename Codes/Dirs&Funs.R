@@ -286,6 +286,8 @@ GEV_Binom = function(Qcont,   #df with an, mp, tot2.5, tot97.5 of continuous per
   for ( i in 1 : nrow(MegaSpag)) {MegaGev[i,] = qgev(p = prob,loc = MegaSpag$Pos[i],
                                                      scale = MegaSpag$Ech[i], 
                                                      shape = -1*MegaSpag$Form[i]) }
+  PostPos = MegaSpag$Pos
+  PostEch = MegaSpag$Ech
   PostForm = MegaSpag$Form
   PostThres = MegaSpag$Seuil
   PostNban = MegaSpag$NBan
@@ -311,7 +313,8 @@ GEV_Binom = function(Qcont,   #df with an, mp, tot2.5, tot97.5 of continuous per
   Quants = data.frame(Pr=1/(1-prob), Mp=Mp.Quant, Q_2=quant[1,] ,Q_9=quant[2,])
   ### write results in res dir
   write.table(round(Quants,3), paste0(dir.res,"/Quants.txt"), row.names = F)
-  write.table(round(data.frame(Shape = PostForm, Thres = PostThres, Nban = PostNban),3),
+  write.table(round(data.frame(Pos = PostPos, Ech = PostEch, Shape = PostForm,
+                               Thres = PostThres, Nban = PostNban),3),
               paste0(dir.res,"/Params.txt"), row.names = F)
   write.table(Mp.GeV,  paste0(dir.res,"/Maxpost_Par.txt"), row.names = F)
   
@@ -421,6 +424,8 @@ GEV_Spag = function(Q,       #df with an, mp, tot2.5, tot97.5 of continuous peri
   for ( i in 1 : nrow(MegaSpag)) {MegaGev[i,] = qgev(p = prob,loc = MegaSpag$Pos[i],
                                                      scale = MegaSpag$Ech[i], 
                                                      shape = -1*MegaSpag$Form[i]) }
+  PostPos = MegaSpag$Pos
+  PostEch = MegaSpag$Ech
   PostForm = MegaSpag$Form
   #### Compute the true maxpost quantiles : maxpost of hydro sample x maxpost of GeV estim
   dat <- dataset(Y = data.frame(Q[,2]))
@@ -435,7 +440,8 @@ GEV_Spag = function(Q,       #df with an, mp, tot2.5, tot97.5 of continuous peri
   Quants = data.frame(Pr=1/(1-prob), Mp=Mp.Quant, Q_2=quant[1,] ,Q_9=quant[2,])
   ### write results in res dir
   write.table(round(Quants,3), paste0(dir.res,"/Quants.txt"), row.names = F)
-  write.table(data.frame(Shape = round(PostForm,3), Thres = NA, Nban = NA),
+  write.table(data.frame(Pos = round(PostPos,3), Ech = round(PostEch,3),
+                         Shape = round(PostForm,3), Thres = NA, Nban = NA),
               paste0(dir.res,"/Params.txt"), row.names = F)
   write.table(round(Mp.GeV,3),  paste0(dir.res,"/Maxpost_Par.txt"), row.names = F)
   
